@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -I.
-OBJS = main
+OBJS = main.o
 
 
 oss:$(OBJS)
@@ -11,4 +11,4 @@ oss:$(OBJS)
 
 
 clean:
-	rm -f oss *.o
+	rm -f oss *.o *.output
