@@ -107,14 +107,13 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	
-	sh_mem_ptr->secs = 10080;
 
 
 	
 	//close file and free all memory
-	shmdt((void *) sh_mem_ptr);
+	//shmdt((void *) sh_mem_ptr);
 	
-	shmctl(shm_id, IPC_RMID, NULL);
+	//shmctl(shm_id, IPC_RMID, NULL);
 
 	fclose(of);
 	free(output_file);
