@@ -6,8 +6,10 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
-#define BUF_SIZE 100
+
 
 
 int main(int argc, char *argv[]) {
@@ -17,6 +19,8 @@ int main(int argc, char *argv[]) {
 	//fork() returns 0 for children 
 	//getpid() returns that processes pid
 	pid_t pid;
+	
+
 
 	int max_children = 4;
 	//conncurrent children
@@ -73,7 +77,8 @@ int main(int argc, char *argv[]) {
 	
 	
 	if(!of){
-		printf("cant open file\n");
+		perror("cant open file\n");
+		exit(0);	
 	}
 
 
