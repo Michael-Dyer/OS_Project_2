@@ -9,7 +9,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-
+#include "oss.h"
 
 
 int main(int argc, char *argv[]) {
@@ -65,7 +65,6 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-
 	//set out_putfile to default if it hasnt been set 	
 	if (!output_file[0]){
 		strcpy(output_file, "oss.output");
@@ -73,21 +72,49 @@ int main(int argc, char *argv[]) {
 
 
 	//makesure output_file ends in .txt for easy clean up	
-	FILE *of = fopen(output_file, "w");
-	
+	FILE *of = fopen(output_file, "w");	
 	
 	if(!of){
 		perror("cant open file\n");
-		exit(0);	
+		exit(1);	
 	}
+
 
 
 	
 
 
-	//close file and free string memory
+
+
+	//set up vars to have shared meme	
+	key_t shm_key;
+	int shm_id;
+	struct Sh_mem *sh_mem_ptr;
+	
+	shm_key = ftok(".", '0');	
+	shm_id = shmget(shm_key, sizeof(struct Sh_mem), IPC_CREAT | 0666); 
+	if (shm_id < 0){
+		perror("shmget error");
+		exit(1);
+	}
+
+		
+	sh_mem_ptr = (struct Sh_mem *) shmat(shm_id, NULL, 0);
+	if (sh_mem_ptr == NULL){
+		perror("shmat error");
+		printf("error");
+		exit(1);
+	}
+		
+	//close file and free all memory
+	shmdt((void *) sh_mem_ptr);
+	
+	shmctl(shm_id, IPC_RMID, NULL);
+
 	fclose(of);
 	free(output_file);
+
+
 	return 0;
 
 }//end of main
