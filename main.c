@@ -90,22 +90,27 @@ int main(int argc, char *argv[]) {
 	key_t shm_key;
 	int shm_id;
 	struct Sh_mem *sh_mem_ptr;
-	
+
+	//make a key and get shared memory	
 	shm_key = ftok(".", '0');	
 	shm_id = shmget(shm_key, sizeof(struct Sh_mem), IPC_CREAT | 0666); 
 	if (shm_id < 0){
-		perror("shmget error");
+		perror("shmget error in main.c");
 		exit(1);
 	}
 
-		
+	//this will actually put the mem into shared memory	
 	sh_mem_ptr = (struct Sh_mem *) shmat(shm_id, NULL, 0);
 	if (sh_mem_ptr == NULL){
 		perror("shmat error");
 		printf("error");
 		exit(1);
 	}
-		
+	
+	sh_mem_ptr->secs = 10080;
+
+
+	
 	//close file and free all memory
 	shmdt((void *) sh_mem_ptr);
 	
