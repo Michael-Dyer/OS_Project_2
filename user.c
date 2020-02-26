@@ -30,8 +30,49 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	
-	printf("this should display 10000: %d\n",sh_mem_ptr->secs);
+	//shared mem is working above
+	//
+	//	
+	//
+
+
+	int child_num = atoi(argv[1]);
+	int num_target = atoi(argv[2]); 
+	long start_nano_secs = sh_mem_ptr->nano_secs;
+	long end_time = start_nano_secs + 1000000;	
+
+	int flag = 0;
+	int i;
+
 	
+
+	for (i = 2; i <= num_target/2; ++i){
+		if (num_target % i == 0) {
+			flag = 1;
+			break;
+		}
+		if (sh_mem_ptr->nano_secs >= end_time) {
+			printf("this took too long\n");	
+			exit(1);
+		}	
+	}
+
+
+	long end_nano_secs = sh_mem_ptr->nano_secs;
+
+	if( num_target == 1){
+		printf("1 isn't a prime\n");
+	}
+	else {
+		if (flag == 0){
+			printf("%d is a prime number\n", num_target);
+		}
+		else{
+			printf("%d is not prime\n", num_target);
+		}
+	}
+
+
 
 	return 0;
 

@@ -63,12 +63,20 @@ int main(int argc, char *argv[]) {
 				break;
 
 		}
-	}
-
+	}	
+		
 	//set out_putfile to default if it hasnt been set 	
 	if (!output_file[0]){
 		strcpy(output_file, "oss.output");
 	}
+
+	//make sure con_children can't be more than max children
+	if (con_children > max_children) {
+		con_children = max_children;
+	}
+
+	
+
 
 
 	//makesure output_file ends in .txt for easy clean up	
@@ -106,14 +114,34 @@ int main(int argc, char *argv[]) {
 		printf("error");
 		exit(1);
 	}
+
+	//now fill shared mem array with 0
+	//if it doesn't get to terminate, 
+	//it will stay 0	
+	int i;	
+	for(i = 0; i <= max_children; i++){
+		sh_mem_ptr->prime_arr[i] = 0;
+	}	
+
 	
+
+	//forking
+	if ((pid = fork()) < 0) {
+		perror("forking child process failed\n");
+		exit(1);	
+	}
+	else {
+		//fix
+		execvp("./user", "./user");	
+
+
+	}
 
 
 	
 	//close file and free all memory
-	//shmdt((void *) sh_mem_ptr);
-	
-	//shmctl(shm_id, IPC_RMID, NULL);
+	shmdt((void *) sh_mem_ptr);
+	shmctl(shm_id, IPC_RMID, NULL);
 
 	fclose(of);
 	free(output_file);
