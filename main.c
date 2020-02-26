@@ -11,6 +11,7 @@
 
 #include "oss.h"
 
+char** get_string(int index,int test);
 
 int main(int argc, char *argv[]) {
 	//for getopt
@@ -19,9 +20,9 @@ int main(int argc, char *argv[]) {
 	//fork() returns 0 for children 
 	//getpid() returns that processes pid
 	pid_t pid;
+	//this will be a string array for excvp 
+	char** args;
 	
-
-
 	int max_children = 4;
 	//conncurrent children
 	int con_children = 2;
@@ -123,21 +124,20 @@ int main(int argc, char *argv[]) {
 		sh_mem_ptr->prime_arr[i] = 0;
 	}	
 
-	
 
-	//forking
+
 	if ((pid = fork()) < 0) {
 		perror("forking child process failed\n");
 		exit(1);	
 	}
-	else {
-		//fix
-		execvp("./user", "./user");	
-
-
+	else if(pid ==0){
+		args = get_string(0,99);
+		execvp(args[0], args);	
 	}
 
 
+
+		
 	
 	//close file and free all memory
 	shmdt((void *) sh_mem_ptr);
@@ -150,3 +150,17 @@ int main(int argc, char *argv[]) {
 	return 0;
 
 }//end of main
+
+
+
+//this will make the arg to use to call the other executable
+char** get_string(int index,int test) {
+
+	char s_index[256];
+	char s_test[1000];	
+	sprintf(s_index,"%d", index );
+	sprintf(s_test,"%d", test );
+
+	char *args[] = {"./user",s_index,s_test,NULL};
+	return args;
+}

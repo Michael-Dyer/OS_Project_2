@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 	int flag = 0;
 	int i;
 
-	
+	printf("time is%ld secs\n", sh_mem_ptr->nano_secs);	
 
 	for (i = 2; i <= num_target/2; ++i){
 		if (num_target % i == 0) {
