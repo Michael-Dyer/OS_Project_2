@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -12,6 +13,8 @@
 #include "oss.h"
 
 char** get_string(int index,int test);
+void sig_handler(int sig);
+
 
 int main(int argc, char *argv[]) {
 	//for getopt
@@ -32,6 +35,13 @@ int main(int argc, char *argv[]) {
 
 	//string that will be output file
 	char *output_file = malloc(256);
+
+
+	//this will allow us to call the signal handler
+	//either ctr c or 2 minutes will call sig handler
+	signal(SIGINT, sig_handler);
+	signal(SIGALRM, sig_handler);
+	alarm(120);	
 
 	//self note, understanding getopt now
 	//the : will be stored in var optarg
@@ -136,7 +146,9 @@ int main(int argc, char *argv[]) {
 	}
 
 
-
+	while(1){
+		pause();
+	}
 		
 	
 	//close file and free all memory
@@ -161,6 +173,18 @@ char** get_string(int index,int test) {
 	sprintf(s_index,"%d", index );
 	sprintf(s_test,"%d", test );
 
-	char *args[] = {"./user",s_index,s_test,NULL};
-	return args;
+	char *a[] = {"./user",s_index,s_test,NULL};
+	return a;
 }
+
+void sig_handler(int sig) {
+
+
+	printf("ur out\n");
+
+	exit(0);
+
+
+
+}
+
