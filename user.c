@@ -44,6 +44,8 @@ int main(int argc, char *argv[]) {
 	int flag = 0;
 	int i;
 
+	//printf("coming in %d and %s\n", child_num, argv[2]);
+	//printf("raw arg: %s\n", argv[2]);
 
 	for (i = 2; i <= num_target/2; ++i){
 		if (num_target % i == 0) {
@@ -52,6 +54,7 @@ int main(int argc, char *argv[]) {
 		}
 		if (sh_mem_ptr->nano_secs >= end_time) {
 			printf("this took too long\n");	
+			sh_mem_ptr->prime_arr[child_num] = 0;
 			exit(1);
 		}	
 	}
@@ -60,14 +63,17 @@ int main(int argc, char *argv[]) {
 	long end_nano_secs = sh_mem_ptr->nano_secs;
 
 	if( num_target == 1){
-		printf("1 isn't a prime\n");
+		//printf("1 isn't a prime\n");
+		sh_mem_ptr->prime_arr[child_num] = (0 - num_target);
 	}
 	else {
 		if (flag == 0){
-			printf("%d is a prime number\n", num_target);
+			//printf("%d is a prime number\n", num_target);
+			sh_mem_ptr->prime_arr[child_num] = num_target;
 		}
 		else{
-			printf("%d is not prime\n", num_target);
+			//printf("%d is not prime\n", num_target);
+			sh_mem_ptr->prime_arr[child_num] = (0 - num_target);
 		}
 	}
 

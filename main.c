@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
@@ -15,6 +16,9 @@
 char** get_string(int index,int test);
 void sig_handler(int sig);
 
+//making these global so sig_handler can use
+int* pid_arr; 
+int end_arr;
 
 int main(int argc, char *argv[]) {
 	//for getopt
@@ -32,10 +36,10 @@ int main(int argc, char *argv[]) {
 	int seq_start = 3;
 	// sequence increment
 	int seq_i = 1;
+	int status;
 
 	//string that will be output file
 	char *output_file = malloc(256);
-
 
 	//this will allow us to call the signal handler
 	//either ctr c or 2 minutes will call sig handler
@@ -50,7 +54,11 @@ int main(int argc, char *argv[]) {
 		switch (opt) {
 			case 'h':
 				//change this
-				printf("Help message here\n"); 
+				printf("welcome to my program!\n"); 
+				printf("n(max children) default is 4\n"); 
+				printf("s default is 2\n");  
+				printf("b default is 3\n");  
+				printf("i default is 1\n");  
 				exit(EXIT_FAILURE);
 			case 'n':
 				max_children = atoi(optarg);	
@@ -86,7 +94,10 @@ int main(int argc, char *argv[]) {
 		con_children = max_children;
 	}
 
-	
+	if (max_children <= 0 || con_children <= 0 || seq_start <= 0 || seq_i <= 0){
+		perror("cant open file\n");
+		exit(1);
+	}
 
 
 
@@ -97,11 +108,6 @@ int main(int argc, char *argv[]) {
 		perror("cant open file\n");
 		exit(1);	
 	}
-
-
-
-	
-
 
 
 
@@ -130,26 +136,97 @@ int main(int argc, char *argv[]) {
 	//if it doesn't get to terminate, 
 	//it will stay 0	
 	int i;	
-	for(i = 0; i <= max_children; i++){
-		sh_mem_ptr->prime_arr[i] = 0;
+	//for(i = 0; i < max_children; i++){
+	//	sh_mem_ptr->prime_arr[i] = 0;
+	//}	
+
+	int nums_to_test[max_children];
+	int pid_arr[max_children];
+	int end_arr[max_children];
+
+	//fill nums_to_test with values that will be tested
+	for(i = 0; i < max_children; i++) {
+		nums_to_test[i] = seq_start;
+		seq_start = seq_start + seq_i;
+	}
+
+	int p_ran = 0;
+	int p_running = 0;
+	//this will execute the string
+	//args = get_string(0,99);
+	//execvp(args[0], args);	
+	//
+
+
+
+	while (p_ran < max_children) {
+	sh_mem_ptr->nano_secs += 10000;
+	
+	if (p_running <= con_children) {
+		
+		p_running++;
+		if ((pid = fork()) < 0) {
+			perror("forking child process failed\n");
+			exit(1);	
+		}
+		else if(pid ==0 && p_running <= con_children){
+
+			char s_index[20];
+			char s_test[20];	
+			sprintf(s_index,"%d", p_ran);
+			sprintf(s_test,"%d", nums_to_test[p_ran]);
+			//this is right
+			char *args[] = {"./user", s_index , s_test , NULL};
+
+			execvp(args[0], args);	
+		}
+		//this will show that execvp is done
+		p_ran++;	
+	}//end of if loop	
+
+	if(WIFEXITED(status)){
+		end_arr[p_ran] = sh_mem_ptr->nano_secs;
+		p_running--;
+	}
+	
+	}//end of while
+	
+	
+	//for(i = 0; i < max_children; i++){
+	//	printf("number is: %d\n",sh_mem_ptr->prime_arr[i]);
+	//}	
+	
+
+	//print firt line
+	for(i = 0; i < max_children; i++){
+		fprintf(of, "child %d ended at %d nanoseconds, ", i, end_arr[i]);	
+		sh_mem_ptr->prime_arr[i] ;
+	}	
+		fprintf(of, "\n");
+
+	//seconnd line 
+
+	for(i = 0; i < max_children; i++){
+		if (sh_mem_ptr->prime_arr[i] > 0) { 
+			fprintf(of, "%d is prime, ", sh_mem_ptr->prime_arr[i]);	
+		}
+		else if (sh_mem_ptr->prime_arr[i] < 0) {
+			fprintf(of, "%d is not prime, ", (0 - sh_mem_ptr->prime_arr[i]));	
+		} 
+	}
+		fprintf(of, "\n");
+
+	//third line
+	for(i = 0; i < max_children; i++){
+		if (sh_mem_ptr->prime_arr[i] = 0) { 
+			fprintf(of, "%d this process wasn't able to handle the prime, sorry ", i);	
+		}
 	}	
 
 
 
-	if ((pid = fork()) < 0) {
-		perror("forking child process failed\n");
-		exit(1);	
-	}
-	else if(pid ==0){
-		args = get_string(0,99);
-		execvp(args[0], args);	
-	}
 
 
-	while(1){
-		pause();
-	}
-		
 	
 	//close file and free all memory
 	shmdt((void *) sh_mem_ptr);
@@ -165,17 +242,6 @@ int main(int argc, char *argv[]) {
 
 
 
-//this will make the arg to use to call the other executable
-char** get_string(int index,int test) {
-
-	char s_index[256];
-	char s_test[1000];	
-	sprintf(s_index,"%d", index );
-	sprintf(s_test,"%d", test );
-
-	char *a[] = {"./user",s_index,s_test,NULL};
-	return a;
-}
 
 void sig_handler(int sig) {
 

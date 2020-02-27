@@ -1,0 +1,11 @@
+type make to compile
+
+to run execute ./oss optional flags include [nsbi]
+
+
+Currently the timer isn't working correctly even though i have confirmed that multiple different thrreads are running, just wasn't getting timer
+
+the output also isn't correct when doing process handling
+
+
+make clean will remove all executables along with .o files and .output files
